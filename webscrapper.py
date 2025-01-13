@@ -49,8 +49,8 @@ def main():
             'title': title
           }
 
-    with open('activies.json', 'w') as f:
-      json.dump(activities, f)
+    with open('activities.json', 'w') as file:
+      json.dump(activities, file)
 
 if (__name__ == '__main__'):
   main()
