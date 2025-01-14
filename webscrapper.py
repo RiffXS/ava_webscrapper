@@ -36,18 +36,50 @@ def main():
         events = thing.div.ul.find_all('li')
         for event in events:
           event_type = event['data-event-eventtype']
-          if (event_type == 'due'):
-            s = ' '
-            title = event.a['title'].split()[:-5]
-            title = s.join(title)
-          else:
-            title = event.a['title']
+
+          if (event_type != 'close'):
+            try:
+              activities[f'{day[3]} {day[4]}'] = [] if len(activities[f'{day[3]} {day[4]}']) > 0 else activities[f'{day[3]} {day[4]}']
+            except:
+              activities[f'{day[3]} {day[4]}'] = []
+
+            if (event_type == 'due'):
+              string = ' '
+              title = event.a['title'].split()[:-5]
+              title = string.join(title)
+            else:
+              title = event.a['title']
+            
+            activities[f'{day[3]} {day[4]}'].append({
+              'link': event.a['href'],
+              'type': event['data-event-eventtype'],
+              'title': title
+            })
+
+    print(activities)
+    for key, values in activities.items():
+      for value in values:
+        re = s.get(value['link'])
+        soup = bs(re.content, 'html.parser')
+
+        if (value['type'] != 'due'):
+          content = soup.find('div', class_='box py-3 quizinfo')
+
+          paragraphs = content.p.find_next_siblings()
+          start = paragraphs[0].contents[0].split(' ')[-4:]
+          end = paragraphs[1].contents[0].split(' ')[-4:]
+
+          end_min = int(end[-1][-2:])
+          end_hour = int(end[-1][:2])
+          start_min = int(start[-1][-2:])
+          start_hour = int(start[-1][:2])
           
-          activities[f'{day[3]} {day[4]}'] = {
-            'link': event.a['href'],
-            'type': event['data-event-eventtype'],
-            'title': title
-          }
+          
+          
+          print(f'{start_hour}:{start_min} {end_hour}:{end_min}')
+
+        else:
+          print(value['title'])
 
     with open('activities.json', 'w') as file:
       json.dump(activities, file)
