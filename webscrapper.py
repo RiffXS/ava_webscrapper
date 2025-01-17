@@ -74,7 +74,7 @@ def main():
           start_min = int(start[-1][-2:])
           start_hour = int(start[-1][:2])
           
-          
+          print('')
           
           print(f'{start_hour}:{start_min} {end_hour}:{end_min}')
 
