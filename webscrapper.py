@@ -16,8 +16,11 @@ def get_credentials():
     return ava_user, ava_pass
 
 
-def get_preliminary_activities(things):
+def get_preliminary_activities(soup):
     activities = {}
+
+    things = soup.find_all(
+        'div', class_='d-none d-md-block hidden-phone text-xs-center')
 
     for thing in things:
         day = thing.span.contents[0].split(' ')
@@ -28,11 +31,10 @@ def get_preliminary_activities(things):
 
                 if (event_type != 'close'):
                     try:
-                        activities[f'{day[3]} {day[4]}'] = [] if len(
-                            activities[f'{day[3]} {day[4]}']) > 0 else activities[f'{day[3]} {day[4]}']
-                        print('b')
+                        if len(activities[f'{day[3]} {day[4]}']) > 0:
+                            activities[f'{day[3]} {day[4]}'] = activities[f'{day[3]} {day[4]}']
+
                     except KeyError:
-                        print('a')
                         activities[f'{day[3]} {day[4]}'] = []
 
                     if (event_type == 'due'):
@@ -49,6 +51,45 @@ def get_preliminary_activities(things):
                     })
 
     return activities
+
+
+def get_full_homeworks(activities, s):
+    homeworks = {}
+
+    for key, values in activities.items():
+        for value in values:
+            re = s.get(value['link'])
+            soup = bs(re.content, 'html.parser')
+
+            if (value['type'] != 'due'):
+                content = soup.find('div', class_='box py-3 quizinfo')
+
+                paragraphs = content.p.find_next_siblings()
+
+                start = paragraphs[0].contents[0].split(' ')[-4:]
+                end = paragraphs[1].contents[0].split(' ')[-4:]
+
+                start_date = {
+                    'day': int(start[0]),
+                    'month': start[1],
+                    'year': int(start[2][:-1]),
+                    'hour': int(start[-1][:2]),
+                    'min': int(start[-1][-2:]),
+                }
+
+                end_date = {
+                    'day': int(end[0]),
+                    'month': end[1],
+                    'year': int(end[2][:-1]),
+                    'hour': int(end[-1][:2]),
+                    'min': int(end[-1][-2:]),
+                }
+
+                # print(value)
+                print(start_date, end_date)
+
+            else:
+                print(value['title'])
 
 
 def main():
@@ -74,38 +115,13 @@ def main():
 
             r = s.get(calendar_url)
             soup = bs(r.content, 'html.parser')
-            print(soup)
-            things = soup.find_all(
-                'div', class_='d-none d-md-block hidden-phone text-xs-center')
 
-            activities = get_preliminary_activities(things)
+            activities = get_preliminary_activities(soup)
 
-            print(activities)
+            homework = get_full_homeworks(activities, s)
 
-            for key, values in activities.items():
-                for value in values:
-                    re = s.get(value['link'])
-                    soup = bs(re.content, 'html.parser')
-
-                    if (value['type'] != 'due'):
-                        content = soup.find('div', class_='box py-3 quizinfo')
-
-                        paragraphs = content.p.find_next_siblings()
-                        start = paragraphs[0].contents[0].split(' ')[-4:]
-                        end = paragraphs[1].contents[0].split(' ')[-4:]
-
-                        end_min = int(end[-1][-2:])
-                        end_hour = int(end[-1][:2])
-                        start_min = int(start[-1][-2:])
-                        start_hour = int(start[-1][:2])
-
-                        print(f'{start_hour}:{start_min} {end_hour}:{end_min}')
-
-                    else:
-                        print(value['title'])
-
-                with open('activities.json', 'w') as file:
-                    json.dump(activities, file)
+            with open('activities.json', 'w') as file:
+                json.dump(activities, file)
 
     except requests.exceptions.ConnectionError:
         print('Site inalcançável')
