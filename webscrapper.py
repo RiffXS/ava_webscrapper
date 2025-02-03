@@ -78,7 +78,7 @@ def get_month_num(month):
         return 'error'
 
 
-def get_full_homeworks(activities, s):
+def get_activities_time(activities, s):
     for key, values in activities.items():
         for i in range(len(values)):
             title, link, event_type = values[i]
@@ -102,7 +102,7 @@ def get_full_homeworks(activities, s):
 
                 start_date = (
                     int(start[2][:-1]),
-                    start_month,
+                    start[1],
                     int(start[0]),
                     int(start[-1][:2]),
                     int(start[-1][-2:]),
@@ -110,21 +110,21 @@ def get_full_homeworks(activities, s):
 
                 end_date = (
                     int(end[2][:-1]),
-                    end_month,
+                    end[1],
                     int(end[0]),
                     int(end[-1][:2]),
                     int(end[-1][-2:]),
                 )
 
-                # g_start_date = f'{start[2][:-1]}-{start_month}-{start[0]}T{start[-1][:2]}:{start[-1][-2:]}:00-03:00'
-                # g_end_date = f'{end[2][:-1]}-{end_month}-{end[0]}T{end[-1][:2]}:{end[-1][-2:]}:00-03:00'
+                g_start_date = f'{start[2][:-1]}-{start_month}-{start[0]}T{start[-1][:2]}:{start[-1][-2:]}:00-03:00'
+                g_end_date = f'{end[2][:-1]}-{end_month}-{end[0]}T{end[-1][:2]}:{end[-1][-2:]}:00-03:00'
 
                 activities[key][i] = (
                     title,
                     link,
                     event_type,
-                    # (g_start_date, g_end_date),
-                    (start_date, end_date)
+                    (start_date, end_date),
+                    (g_start_date, g_end_date),
                 )
 
             else:
@@ -152,7 +152,7 @@ def get_full_homeworks(activities, s):
 
                 start_date = (
                     int(date[2][:-1]),
-                    date_month,
+                    date[1],
                     start_day,
                     int(start_hour),
                     int(date[-1][-2:]),
@@ -160,21 +160,21 @@ def get_full_homeworks(activities, s):
 
                 end_date = (
                     int(date[2][:-1]),
-                    date_month,
+                    date[1],
                     int(date[0]),
                     int(date[-1][:2]),
                     int(date[-1][-2:]),
                 )
 
-                # g_start_date = f'{date[2][:-1]}-{date_month}-{date[0]}T{end_hour}:{date[-1][-2:]}:00-03:00'
-                # g_end_date = f'{date[2][:-1]}-{date_month}-{date[0]}T{date[-1][:2]}:{date[-1][-2:]}:00-03:00'
+                g_start_date = f'{date[2][:-1]}-{date_month}-{date[0]}T{start_hour}:{date[-1][-2:]}:00-03:00'
+                g_end_date = f'{date[2][:-1]}-{date_month}-{date[0]}T{date[-1][:2]}:{date[-1][-2:]}:00-03:00'
 
                 activities[key][i] = (
                     title,
                     link,
                     event_type,
-                    # (g_start_date, g_end_date),
                     (start_date, end_date),
+                    (g_start_date, g_end_date),
                 )
 
 
@@ -204,7 +204,7 @@ def main():
 
             activities = get_preliminary_activities(soup)
 
-            get_full_homeworks(activities, s)
+            get_activities_time(activities, s)
 
             with open('homeworks.json', 'w') as file:
                 json.dump(activities, file)
